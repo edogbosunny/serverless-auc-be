@@ -1,0 +1,27 @@
+service: easy-auction
+
+plugins:
+  - serverless-bundle
+  - serverless-pseudo-parameters
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  memorySize: 256
+  stage: ${opt:stage, 'dev'}
+  lambdaHashingVersion: 20201221
+  # region: region, 'us-east-1'
+  # the above determins what stage i am shipping the app to. above also shows how variabls are declared in the yml 
+  # ${opt:stage} ${opt:stage, 'dev'} The dev params added is the default value
+  
+functions:
+  hello:
+    handler: src/handlers/hello.handler
+    events:
+      - http:
+          method: GET
+          path: /hello
+# custom:
+#   bundle: 
+#     linting: false
+# The above allows us specify custom variables
