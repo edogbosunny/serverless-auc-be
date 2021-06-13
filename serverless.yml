@@ -10,17 +10,59 @@ provider:
   memorySize: 256
   stage: ${opt:stage, 'dev'}
   lambdaHashingVersion: 20201221
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:*
+      # Resource: "*"
+  # iamRoleStatements:
+  #   - Effect: "Allow"
+  #     Action:
+  #      - dynamodb:Query
+  #      - dynamodb:Scan
+  #      - dynamodb:GetItem
+  #      - dynamodb:PutItem
+  #      - dynamodb:UpdateItem
+  #      - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:us-east-1:090473797445:table/AuctionsTable"
+        # - arn:aws:dynamodb:us-east-1:090473797445:table/AuctionsTable
+
+        # - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/AuctionsTable
+        # - arn:aws:dynamodb:us-east-1:090473797445:table/AuctionsTable
+
+        # - arn:aws:dynamodb:us-east-1:090473797445:table/AuctionsTable
+        
   # region: region, 'us-east-1'
   # the above determins what stage i am shipping the app to. above also shows how variabls are declared in the yml 
   # ${opt:stage} ${opt:stage, 'dev'} The dev params added is the default value
   
+resources:
+  Resources:
+    AuctionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: AuctionsTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+            
 functions:
-  hello:
-    handler: src/handlers/hello.handler
+  create-auction:
+    handler: src/handlers/create-auction.handler
+    events:
+      - http:
+          method: POST
+          path: /auction
+  home:
+    handler: src/handlers/home.handler
     events:
       - http:
           method: GET
-          path: /hello
+          path: /
 # custom:
 #   bundle: 
 #     linting: false

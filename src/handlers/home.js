@@ -1,10 +1,10 @@
-async function hello(event, context) {
+async function home(event, context) {
   return {
     statusCode: 200,
     body: JSON.stringify({ message: 'Hello world from Nigeria' }),
   };
 }
 
-export const handler = hello;
+export const handler = home;
 
 
