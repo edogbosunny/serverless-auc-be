@@ -11,20 +11,23 @@ provider:
   stage: ${opt:stage, 'dev'}
   lambdaHashingVersion: 20201221
   iamRoleStatements:
-    - Effect: "Allow"
-      Action:
-        - dynamodb:*
-      # Resource: "*"
-  # iamRoleStatements:
+    - ${file(iam/AuctionsTableIAM.yml):AuctionsTableIAM}
+  environment:
+    AUCTIONS_TABLE_NAME: ${self:custom.AuctionsTable.name}
   #   - Effect: "Allow"
   #     Action:
-  #      - dynamodb:Query
-  #      - dynamodb:Scan
-  #      - dynamodb:GetItem
-  #      - dynamodb:PutItem
-  #      - dynamodb:UpdateItem
-  #      - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:us-east-1:090473797445:table/AuctionsTable"
+  #       - dynamodb:*
+  #     # Resource: "*"
+  # # iamRoleStatements:
+  # #   - Effect: "Allow"
+  # #     Action:
+  # #      - dynamodb:Query
+  # #      - dynamodb:Scan
+  # #      - dynamodb:GetItem
+  # #      - dynamodb:PutItem
+  # #      - dynamodb:UpdateItem
+  # #      - dynamodb:DeleteItem
+  #     Resource: "arn:aws:dynamodb:us-east-1:090473797445:table/AuctionsTable"
         # - arn:aws:dynamodb:us-east-1:090473797445:table/AuctionsTable
 
         # - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/AuctionsTable
@@ -38,17 +41,18 @@ provider:
   
 resources:
   Resources:
-    AuctionsTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: AuctionsTable
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
+      AuctionsTable: ${file(resources/AuctionsTable.yml):AuctionsTable}
+    # AuctionsTable:
+    #   Type: AWS::DynamoDB::Table
+    #   Properties:
+    #     TableName: AuctionsTable
+    #     BillingMode: PAY_PER_REQUEST
+    #     AttributeDefinitions:
+    #       - AttributeName: id
+    #         AttributeType: S
+    #     KeySchema:
+    #       - AttributeName: id
+    #         KeyType: HASH
             
 functions:
   create-auction:
@@ -63,7 +67,27 @@ functions:
       - http:
           method: GET
           path: /
+
+  get-auctions:
+    handler: src/handlers/get-auctions.handler
+    events:
+      - http:
+          method: GET
+          path: /auctions
+
+  get-auction:
+    handler: src/handlers/get-auction.handler
+    events:
+      - http:
+          method: GET
+          path: /auction/{id}
 # custom:
 #   bundle: 
 #     linting: false
 # The above allows us specify custom variables
+custom:
+  AuctionsTable:
+    name: !Ref AuctionsTable
+    arn: !GetAtt AuctionsTable.Arn
+
+# cloud formation intricic functions
